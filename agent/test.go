@@ -1,26 +1,3 @@
-# clavier
-A highly available service discovery framework applied to clients with load balancing and health check functions.
-
-# Overview
-In order to enhance the availability of service access, Clavier provides a scalable capability framework from multiple perspectives.
-
-The capabilities provided by Clavier are as follows:
-* Extensible Service Discovery Framework
-* An easily extensible health check framework
-* A highly flexible client-side active load balancing framework
-
-Based on the frameworks, Clavier integrates some specific implementations, including dns-based service discovery, IP list-based polling scheduling strategy, and tcp/http/grpc-based health check process.
-
-The health check strategy is as follows:
-* TCP: Trying to establish a connection can only confirm that the peer service has responded to the three-way handshake, which does not represent the true availability of the service.
-* HTTP: Use a short link to execute an HTTP/1.1 request, and judge that the return code not less than 500.
-* GRPC: Execute the health check request of grpc, and the check return code is SERVING status.
-
-Based on the provided cases, some more scenario-based functions can be easily realized.
-
-# Example
-A simple dns-based service discovery case that enables tcp health check.
-```
 package main
 
 import (
@@ -103,11 +80,3 @@ func main() {
 	}
 	fmt.Printf("endpoint = %v\n", endpoint)
 }
-```
-
-## Contributing
-- Fork it
-- Create your feature branch (`git checkout -b my-new-feature`)
-- Commit your changes (`git commit -am 'Add some feature'`)
-- Push to the branch (`git push origin my-new-feature`)
-- Create new Pull Request
