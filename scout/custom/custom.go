@@ -28,11 +28,8 @@ func NewCustomChecker(config *scout.ModelConfig) (*customChecker, error) {
 	}
 
 	poolConf := &worker_queue.PoolConfig{
-		Batches:      2,
-		BatchTimeout: 5,
-
-		CleanTimeout: 2,
-		CleanMax:     2,
+		Batches:      conf.Batches,
+		BatchTimeout: conf.BatchTimeout,
 	}
 
 	ctx := context.Background()

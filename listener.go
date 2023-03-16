@@ -14,12 +14,18 @@ import (
 	"github.com/devenants/clavier/discovery"
 )
 
+const (
+	defaultCycle = 10
+)
+
 type DiscoveryConfig struct {
 	Model  string
 	Config discovery.ModelConfig
 }
 
 type ListenerConfig struct {
+	Cycle int
+
 	Group string
 	Items []*types.Endpoint
 
@@ -94,15 +100,31 @@ func (l *Listener) lookup() error {
 
 func (l *Listener) Run() error {
 	for {
+		err := l.lookup()
+		if err != nil {
+			time.Sleep(time.Second * time.Duration(1))
+		} else {
+			break
+		}
+	}
+
+	cycle := l.m.Cycle
+	if cycle == 0 {
+		cycle = defaultCycle
+	}
+
+	ticker := time.NewTicker(time.Second * time.Duration(cycle))
+	defer ticker.Stop()
+
+	for {
 		select {
 		case <-l.ctx.Done():
 			return l.ctx.Err()
-		default:
+		case <-ticker.C:
 			err := l.lookup()
 			if err != nil {
-				return fmt.Errorf("lookup failed %v %v", l.m.Group, err)
+				fmt.Printf("lookup failed %v %v", l.m.Group, err)
 			}
-			time.Sleep(1 * time.Second)
 		}
 	}
 }

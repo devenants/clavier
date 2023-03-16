@@ -9,6 +9,13 @@ import (
 	"time"
 )
 
+const (
+	defaultBatches      = 2
+	defaultBatchTimeout = 5
+	defaultCleanTimeout = 2 * defaultBatchTimeout
+	defaultCleanMax     = 5 * defaultBatches
+)
+
 type PoolConfig struct {
 	Batches      int
 	BatchTimeout int
@@ -34,6 +41,22 @@ type WorkerPool struct {
 }
 
 func NewWorkerPool(ctx context.Context, config *PoolConfig) (*WorkerPool, error) {
+	if config.Batches == 0 {
+		config.Batches = defaultBatches
+	}
+
+	if config.BatchTimeout == 0 {
+		config.BatchTimeout = defaultBatchTimeout
+	}
+
+	if config.CleanTimeout == 0 {
+		config.CleanTimeout = defaultCleanTimeout
+	}
+
+	if config.CleanMax == 0 {
+		config.CleanMax = defaultCleanMax
+	}
+
 	p := &WorkerPool{
 		ctx:                ctx,
 		config:             config,
