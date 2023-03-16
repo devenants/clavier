@@ -121,31 +121,38 @@ func (w *Worker) DelTasklet(name string) int {
 	return WorkerNormal
 }
 
+func (w *Worker) handle() {
+	w.waitMu.Lock()
+	pq := make([]Tasklet, 0)
+	for _, v := range w.watingQueue {
+		pq = append(pq, v)
+	}
+	w.waitMu.Unlock()
+
+	for _, v := range pq {
+		h := v.Hander()
+		if h != nil {
+			err := h(v.Data())
+			if err != nil {
+				fmt.Printf("handler failed %v %v", err, v.Data())
+			}
+		}
+	}
+}
+
 func (w *Worker) Run() error {
 	ticker := time.NewTicker(time.Second * time.Duration(w.batchTimeout))
 	defer ticker.Stop()
 
+	w.handle()
+
 	for {
 		select {
 		case <-w.ctx.Done():
+
 			return w.ctx.Err()
 		case <-ticker.C:
-			w.waitMu.Lock()
-			pq := make([]Tasklet, 0)
-			for _, v := range w.watingQueue {
-				pq = append(pq, v)
-			}
-			w.waitMu.Unlock()
-
-			for _, v := range pq {
-				h := v.Hander()
-				if h != nil {
-					err := h(v.Data())
-					if err != nil {
-						fmt.Printf("handler failed %v %v", err, v.Data())
-					}
-				}
-			}
+			w.handle()
 		}
 	}
 }

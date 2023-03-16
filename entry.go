@@ -98,7 +98,19 @@ func (m *entryManger) launch(entries []*types.Endpoint) {
 		}
 	}
 
-	//TODO clean
+	for k := range m.launchedQueue {
+		hit := false
+		for _, e := range entries {
+			if k == e.ToString() {
+				hit = true
+			}
+		}
+
+		if !hit {
+			m.checker.UnRegister(k)
+			delete(m.launchedQueue, k)
+		}
+	}
 }
 
 func (m *entryManger) enqueue(dsts []*types.Endpoint) {

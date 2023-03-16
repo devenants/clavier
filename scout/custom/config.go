@@ -5,5 +5,7 @@ import (
 )
 
 type CustomCheckerConfig struct {
-	Probe worker_queue.WatcherFunc
+	Probe        worker_queue.WatcherFunc
+	Batches      int
+	BatchTimeout int
 }

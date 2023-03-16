@@ -47,6 +47,8 @@ func main() {
 		return
 	}
 
+	fmt.Printf("%s current\n", time.Now())
+
 	//add a listener
 	l, err := c.AddListener("www.baidu.com", conf)
 	if err != nil {
@@ -67,16 +69,16 @@ func main() {
 	//get endpoint
 	endpoint, err := l.GetEndpoint()
 	if err != nil {
-		fmt.Printf("get endpoint failed %v %v\n", l, err)
+		fmt.Printf("first get endpoint failed %v %v\n", l, err)
 		return
 	}
-	fmt.Printf("endpoint = %v\n", endpoint)
+	fmt.Printf("first endpoint = %v\n", endpoint)
 
 	//get endpoint again
 	endpoint, err = l.GetEndpoint()
 	if err != nil {
-		fmt.Printf("get endpoint failed %v %v\n", l, err)
+		fmt.Printf("second get endpoint failed %v %v\n", l, err)
 		return
 	}
-	fmt.Printf("endpoint = %v\n", endpoint)
+	fmt.Printf("second endpoint = %v\n", endpoint)
 }
