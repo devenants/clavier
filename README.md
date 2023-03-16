@@ -3,6 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/devenants/clavier)](https://goreportcard.com/report/github.com/devenants/clavier)
 [![Go Reference](https://pkg.go.dev/badge/github.com/devenants/clavier.svg)](https://pkg.go.dev/github.com/devenants/clavier)
 [![Go Build](https://github.com/devenants/clavier/actions/workflows/ci.yml/badge.svg)](https://pkg.go.dev/github.com/devenants/clavier)
+![license](https://img.shields.io/badge/license-Apache--2.0-green.svg)
 
 A highly available service discovery framework applied to clients with load balancing and health check functions.
 
