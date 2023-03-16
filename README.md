@@ -57,12 +57,10 @@ func main() {
 				Model:  "round-robin",
 				Config: filter.ModelConfig{},
 			},
-			ScoutConfig: &clavier.ScoutMangerConfig{
+			ScoutConfig: &scout.HelperConfig{
 				Model: "tcp",
-				Config: scout.ModelConfig{
-					Data: &tcp.TcpCheckerConfig{
-						ConnectTimeout: 1000,
-					},
+				Data: &tcp.TcpCheckerConfig{
+					ConnectTimeout: 1000,
 				},
 			},
 		},
@@ -74,6 +72,8 @@ func main() {
 		fmt.Printf("create clavier failed %v\n", err)
 		return
 	}
+
+	fmt.Printf("%s current\n", time.Now())
 
 	//add a listener
 	l, err := c.AddListener("www.baidu.com", conf)
@@ -90,23 +90,23 @@ func main() {
 	}
 
 	//wait a moment for dns resolve and health check
-	time.Sleep(5 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	//get endpoint
 	endpoint, err := l.GetEndpoint()
 	if err != nil {
-		fmt.Printf("get endpoint failed %v %v\n", l, err)
+		fmt.Printf("first get endpoint failed %v %v\n", l, err)
 		return
 	}
-	fmt.Printf("endpoint = %v\n", endpoint)
+	fmt.Printf("first endpoint = %v\n", endpoint)
 
 	//get endpoint again
 	endpoint, err = l.GetEndpoint()
 	if err != nil {
-		fmt.Printf("get endpoint failed %v %v\n", l, err)
+		fmt.Printf("second get endpoint failed %v %v\n", l, err)
 		return
 	}
-	fmt.Printf("endpoint = %v\n", endpoint)
+	fmt.Printf("second endpoint = %v\n", endpoint)
 }
 ```
 

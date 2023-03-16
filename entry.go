@@ -19,14 +19,9 @@ type FilterMangerConfig struct {
 	Config     filter.ModelConfig
 }
 
-type ScoutMangerConfig struct {
-	Model  string
-	Config scout.ModelConfig
-}
-
 type EntryManagerConfig struct {
 	FilterConfig *FilterMangerConfig
-	ScoutConfig  *ScoutMangerConfig
+	ScoutConfig  *scout.HelperConfig
 }
 
 type entryManger struct {
@@ -36,7 +31,7 @@ type entryManger struct {
 	f filter.FilterModel
 
 	probe   worker_queue.WatcherFunc
-	checker scout.CheckModel
+	checker *scout.CheckHelper
 
 	entryMu       sync.RWMutex
 	launchedQueue map[string]*probeEntry
@@ -53,9 +48,9 @@ func NewDstManger(emc *EntryManagerConfig) (*entryManger, error) {
 		return nil, err
 	}
 
-	var s scout.CheckModel
+	var checker *scout.CheckHelper
 	if emc.ScoutConfig.Model != "none" {
-		s, err = scout.CheckModelCreate(emc.ScoutConfig.Model, &emc.ScoutConfig.Config)
+		checker, err = scout.NewCheckHelper(emc.ScoutConfig)
 		if err != nil {
 			return nil, err
 		}
@@ -65,16 +60,18 @@ func NewDstManger(emc *EntryManagerConfig) (*entryManger, error) {
 		f:             f,
 		cachedDst:     make([]*types.Endpoint, 0),
 		launchedQueue: make(map[string]*probeEntry),
-		checker:       s,
+		checker:       checker,
 		config:        emc,
 	}, nil
 }
 
 func (m *entryManger) update(host *types.Endpoint, status bool) {
-	m.cacheMu.Lock()
-	defer m.cacheMu.Unlock()
+	m.entryMu.Lock()
+	defer m.entryMu.Unlock()
 
-	m.launchedQueue[host.ToString()].entry.Status = status
+	if v, ok := m.launchedQueue[host.ToString()]; ok {
+		v.entry.Status = status
+	}
 }
 
 func (m *entryManger) launch(entries []*types.Endpoint) {

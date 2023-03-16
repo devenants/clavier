@@ -29,12 +29,10 @@ func main() {
 				Model:  "round-robin",
 				Config: filter.ModelConfig{},
 			},
-			ScoutConfig: &clavier.ScoutMangerConfig{
+			ScoutConfig: &scout.HelperConfig{
 				Model: "tcp",
-				Config: scout.ModelConfig{
-					Data: &tcp.TcpCheckerConfig{
-						ConnectTimeout: 1000,
-					},
+				Data: &tcp.TcpCheckerConfig{
+					ConnectTimeout: 1000,
 				},
 			},
 		},
@@ -64,7 +62,7 @@ func main() {
 	}
 
 	//wait a moment for dns resolve and health check
-	time.Sleep(5 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	//get endpoint
 	endpoint, err := l.GetEndpoint()
