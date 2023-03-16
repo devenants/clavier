@@ -2,6 +2,7 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/devenants/clavier)](https://goreportcard.com/report/github.com/devenants/clavier)
 [![Go Reference](https://pkg.go.dev/badge/github.com/devenants/clavier.svg)](https://pkg.go.dev/github.com/devenants/clavier)
+[![Build Status](https://app.travis-ci.com/devenants/clavier.svg?branch=main)](https://app.travis-ci.com/devenants/clavier)
 
 A highly available service discovery framework applied to clients with load balancing and health check functions.
 
