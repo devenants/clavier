@@ -57,7 +57,7 @@ func testListenerTest(t *testing.T) {
 					Data: nil,
 				},
 			},
-			ScoutConfig: &ScoutMangerConfig{
+			ScoutConfig: &scout.HelperConfig{
 				Model: "none",
 			},
 		},
@@ -105,7 +105,7 @@ func testDelListenerTest(t *testing.T) {
 					Data: nil,
 				},
 			},
-			ScoutConfig: &ScoutMangerConfig{
+			ScoutConfig: &scout.HelperConfig{
 				Model: "none",
 			},
 		},
@@ -144,13 +144,11 @@ func testScoutCustom(t *testing.T) {
 					Data: nil,
 				},
 			},
-			ScoutConfig: &ScoutMangerConfig{
+			ScoutConfig: &scout.HelperConfig{
 				Model: "custom",
-				Config: scout.ModelConfig{
-					Data: &custom.CustomCheckerConfig{
-						Probe: func(_ interface{}) (interface{}, error) {
-							return true, nil
-						},
+				Data: &custom.CustomCheckerConfig{
+					Probe: func(_ interface{}) (interface{}, error) {
+						return true, nil
 					},
 				},
 			},
@@ -186,14 +184,12 @@ func testScoutHttp(t *testing.T) {
 					Data: nil,
 				},
 			},
-			ScoutConfig: &ScoutMangerConfig{
+			ScoutConfig: &scout.HelperConfig{
 				Model: "http",
-				Config: scout.ModelConfig{
-					Data: &http.HttpCheckerConfig{
-						RequestTimeout: 1000,
-						URL:            "/",
-						Method:         "GET",
-					},
+				Data: &http.HttpCheckerConfig{
+					RequestTimeout: 1000,
+					URL:            "/",
+					Method:         "GET",
 				},
 			},
 		},
@@ -228,14 +224,12 @@ func testScoutGrpc(t *testing.T) {
 					Data: nil,
 				},
 			},
-			ScoutConfig: &ScoutMangerConfig{
+			ScoutConfig: &scout.HelperConfig{
 				Model: "grpc",
-				Config: scout.ModelConfig{
-					Data: &sgrpc.GrpcCheckerConfig{
-						Service: "HealthTest",
-						DialOptions: []grpc.DialOption{
-							grpc.WithInsecure(),
-						},
+				Data: &sgrpc.GrpcCheckerConfig{
+					Service: "HealthTest",
+					DialOptions: []grpc.DialOption{
+						grpc.WithInsecure(),
 					},
 				},
 			},
@@ -271,12 +265,10 @@ func testScoutTcp(t *testing.T) {
 					Data: nil,
 				},
 			},
-			ScoutConfig: &ScoutMangerConfig{
+			ScoutConfig: &scout.HelperConfig{
 				Model: "tcp",
-				Config: scout.ModelConfig{
-					Data: &tcp.TcpCheckerConfig{
-						ConnectTimeout: 1000,
-					},
+				Data: &tcp.TcpCheckerConfig{
+					ConnectTimeout: 1000,
 				},
 			},
 		},

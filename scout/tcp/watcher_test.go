@@ -27,20 +27,10 @@ func (t *testEntry) Notify(host *types.Endpoint, status bool) {
 }
 
 var (
-	cw *checkWatcher
+	cw *tcpWatcher
 )
 
 func TestHttpCheckWatcher(t *testing.T) {
-	sc := &scout.ModelConfig{
-		Data: &TcpCheckerConfig{
-			ConnectTimeout: 1000,
-		},
-	}
-
-	c, err := NewTcpChecker(sc)
-	require.Equal(t, err, nil, "")
-	require.NotEqual(t, c, nil, "")
-
 	e := &testEntry{
 		addr: types.Endpoint{
 			Host: "192.168.11.2",
@@ -50,7 +40,14 @@ func TestHttpCheckWatcher(t *testing.T) {
 		idx:  0,
 	}
 
-	cw, err = newCheckWatcher(c, e)
+	sc := &scout.WatcherConfig{
+		Item: e,
+		Data: &TcpCheckerConfig{
+			ConnectTimeout: 1000,
+		},
+	}
+
+	cw, err := newTcpWatcher(sc)
 	require.Equal(t, err, nil, "")
 	require.NotEqual(t, cw, nil, "")
 

@@ -13,6 +13,7 @@ import (
 	"github.com/devenants/clavier/filter"
 	_ "github.com/devenants/clavier/filter/default"
 	_ "github.com/devenants/clavier/filter/round_robin"
+	"github.com/devenants/clavier/scout"
 )
 
 func TestListener(t *testing.T) {
@@ -34,7 +35,7 @@ func TestListener(t *testing.T) {
 					Data: nil,
 				},
 			},
-			ScoutConfig: &ScoutMangerConfig{
+			ScoutConfig: &scout.HelperConfig{
 				Model: "none",
 			},
 		},

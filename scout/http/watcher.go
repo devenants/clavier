@@ -13,38 +13,53 @@ import (
 	"github.com/devenants/clavier/types"
 )
 
-type checkWatcher struct {
+const (
+	modelName             = "http"
+	defaultRequestTimeout = 2000
+)
+
+type httpWatcher struct {
+	config *HttpCheckerConfig
 	ctx    context.Context
-	anchor *httpChecker
-	probe  scout.ScoutDelegate
+	item   scout.ScoutDelegate
 }
 
-func newCheckWatcher(anchor *httpChecker, probe scout.ScoutDelegate) (*checkWatcher, error) {
-	return &checkWatcher{
+func newHttpWatcher(conf *scout.WatcherConfig) (*httpWatcher, error) {
+	var config *HttpCheckerConfig = nil
+	config, ok := conf.Data.(*HttpCheckerConfig)
+	if !ok {
+		return nil, fmt.Errorf("http watcher invalid config: %v", conf)
+	}
+
+	if config.RequestTimeout == 0 {
+		config.RequestTimeout = defaultRequestTimeout
+	}
+
+	return &httpWatcher{
 		ctx:    context.Background(),
-		anchor: anchor,
-		probe:  probe,
+		config: config,
+		item:   conf.Item,
 	}, nil
 }
 
-func (w *checkWatcher) Name() string {
-	return w.probe.Name()
+func (w *httpWatcher) Name() string {
+	return w.item.Name()
 }
 
-func (w *checkWatcher) Data() interface{} {
-	return w.probe.Data()
+func (w *httpWatcher) Data() interface{} {
+	return w.item.Data()
 }
 
-func (w *checkWatcher) Helper() worker_queue.WatcherFunc {
+func (w *httpWatcher) Helper() worker_queue.WatcherFunc {
 	return func(i interface{}) (interface{}, error) {
 		input := i.(*types.Endpoint)
-		url := fmt.Sprintf("http://%s%s", input.ToString(), w.anchor.config.URL)
-		req, err := net_http.NewRequest(w.anchor.config.Method, url, nil)
+		url := fmt.Sprintf("http://%s%s", input.ToString(), w.config.URL)
+		req, err := net_http.NewRequest(w.config.Method, url, nil)
 		if err != nil {
 			return nil, fmt.Errorf("creating the request for the health check failed: %w", err)
 		}
 
-		ctx, cancel := context.WithTimeout(w.ctx, time.Duration(w.anchor.config.RequestTimeout)*time.Millisecond)
+		ctx, cancel := context.WithTimeout(w.ctx, time.Duration(w.config.RequestTimeout)*time.Millisecond)
 		defer cancel()
 
 		req.Header.Set("Connection", "close")
@@ -64,7 +79,7 @@ func (w *checkWatcher) Helper() worker_queue.WatcherFunc {
 	}
 }
 
-func (w *checkWatcher) Notify(a interface{}, b interface{}) {
+func (w *httpWatcher) Notify(a interface{}, b interface{}) {
 	h, ok := a.(*types.Endpoint)
 	if !ok {
 		return
@@ -75,5 +90,11 @@ func (w *checkWatcher) Notify(a interface{}, b interface{}) {
 		return
 	}
 
-	w.probe.Notify(h, s)
+	w.item.Notify(h, s)
+}
+
+func init() {
+	scout.Register(modelName, func(conf *scout.WatcherConfig) (scout.ScoutWatcher, error) {
+		return newHttpWatcher(conf)
+	})
 }

@@ -26,11 +26,18 @@ func (t *testEntry) Notify(host *types.Endpoint, status bool) {
 }
 
 var (
-	cw *checkWatcher
+	cw  *customWatcher
+	err error
 )
 
 func TestCheckWatcherTest(t *testing.T) {
-	sc := &scout.ModelConfig{
+	e := &testEntry{
+		name: "192.168.11.2",
+		idx:  0,
+	}
+
+	sc := &scout.WatcherConfig{
+		Item: e,
 		Data: &CustomCheckerConfig{
 			Probe: func(_ interface{}) (interface{}, error) {
 				return true, nil
@@ -38,16 +45,7 @@ func TestCheckWatcherTest(t *testing.T) {
 		},
 	}
 
-	c, err := NewCustomChecker(sc)
-	require.Equal(t, err, nil, "")
-	require.NotEqual(t, c, nil, "")
-
-	e := &testEntry{
-		name: "192.168.11.2",
-		idx:  0,
-	}
-
-	cw, err = newCheckWatcher(c, e)
+	cw, err = newCustomWatcher(sc)
 	require.Equal(t, err, nil, "")
 	require.NotEqual(t, cw, nil, "")
 

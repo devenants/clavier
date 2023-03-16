@@ -8,36 +8,45 @@ import (
 	"github.com/devenants/clavier/types"
 )
 
-type checkWatcher struct {
-	anchor *customChecker
-	probe  scout.ScoutDelegate
+const (
+	modelName = "custom"
+)
+
+type customWatcher struct {
+	config *CustomCheckerConfig
+	item   scout.ScoutDelegate
 }
 
-func newCheckWatcher(anchor *customChecker, probe scout.ScoutDelegate) (*checkWatcher, error) {
-	if anchor.config.Probe == nil {
-		return nil, fmt.Errorf("handler is nil tasklet: %v config: %v", probe, anchor.config)
+func newCustomWatcher(conf *scout.WatcherConfig) (*customWatcher, error) {
+	var config *CustomCheckerConfig = nil
+	config, ok := conf.Data.(*CustomCheckerConfig)
+	if !ok {
+		return nil, fmt.Errorf("custom watcher invalid config: %v", conf)
 	}
 
-	return &checkWatcher{
-		anchor: anchor,
-		probe:  probe,
+	if config.Probe == nil {
+		return nil, fmt.Errorf("custom probe is nil config: %v", config)
+	}
+
+	return &customWatcher{
+		config: config,
+		item:   conf.Item,
 	}, nil
 }
 
-func (w *checkWatcher) Name() string {
-	return w.probe.Name()
+func (w *customWatcher) Name() string {
+	return w.item.Name()
 }
 
-func (w *checkWatcher) Data() interface{} {
-	return w.probe.Data()
+func (w *customWatcher) Data() interface{} {
+	return w.item.Data()
 }
 
-func (w *checkWatcher) Helper() worker_queue.WatcherFunc {
-	watch := w.anchor.config.Probe
-	return watch
+func (w *customWatcher) Helper() worker_queue.WatcherFunc {
+	return w.config.Probe
 }
 
-func (w *checkWatcher) Notify(a interface{}, b interface{}) {
+func (w *customWatcher) Notify(a interface{}, b interface{}) {
 	h, ok := a.(*types.Endpoint)
 	if !ok {
 		return
@@ -48,5 +57,11 @@ func (w *checkWatcher) Notify(a interface{}, b interface{}) {
 		return
 	}
 
-	w.probe.Notify(h, s)
+	w.item.Notify(h, s)
+}
+
+func init() {
+	scout.Register(modelName, func(conf *scout.WatcherConfig) (scout.ScoutWatcher, error) {
+		return newCustomWatcher(conf)
+	})
 }

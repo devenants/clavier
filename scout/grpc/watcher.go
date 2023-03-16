@@ -12,32 +12,47 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
-type checkWatcher struct {
+const (
+	modelName           = "grpc"
+	defaultCheckTimeout = 5000
+)
+
+type grpcWatcher struct {
+	config *GrpcCheckerConfig
 	ctx    context.Context
-	anchor *grpcChecker
-	probe  scout.ScoutDelegate
+	item   scout.ScoutDelegate
 }
 
-func newCheckWatcher(anchor *grpcChecker, probe scout.ScoutDelegate) (*checkWatcher, error) {
-	return &checkWatcher{
+func newGrpcWatcher(conf *scout.WatcherConfig) (*grpcWatcher, error) {
+	var config *GrpcCheckerConfig = nil
+	config, ok := conf.Data.(*GrpcCheckerConfig)
+	if !ok {
+		return nil, fmt.Errorf("gRPC watcher invalid config: %v", conf)
+	}
+
+	if config.CheckTimeout == 0 {
+		config.CheckTimeout = defaultCheckTimeout
+	}
+
+	return &grpcWatcher{
+		config: config,
 		ctx:    context.Background(),
-		anchor: anchor,
-		probe:  probe,
+		item:   conf.Item,
 	}, nil
 }
 
-func (w *checkWatcher) Name() string {
-	return w.probe.Name()
+func (w *grpcWatcher) Name() string {
+	return w.item.Name()
 }
 
-func (w *checkWatcher) Data() interface{} {
-	return w.probe.Data()
+func (w *grpcWatcher) Data() interface{} {
+	return w.item.Data()
 }
 
-func (w *checkWatcher) Helper() worker_queue.WatcherFunc {
+func (w *grpcWatcher) Helper() worker_queue.WatcherFunc {
 	return func(i interface{}) (interface{}, error) {
 		input := i.(*types.Endpoint)
-		conn, err := grpc.Dial(input.ToString(), w.anchor.config.DialOptions...)
+		conn, err := grpc.Dial(input.ToString(), w.config.DialOptions...)
 		if err != nil {
 			return nil, fmt.Errorf("gRPC health check failed on connect: %w", err)
 		}
@@ -45,11 +60,11 @@ func (w *checkWatcher) Helper() worker_queue.WatcherFunc {
 
 		healthClient := grpc_health_v1.NewHealthClient(conn)
 
-		ctx, cancel := context.WithTimeout(w.ctx, time.Duration(w.anchor.config.CheckTimeout)*time.Millisecond)
+		ctx, cancel := context.WithTimeout(w.ctx, time.Duration(w.config.CheckTimeout)*time.Millisecond)
 		defer cancel()
 
 		res, err := healthClient.Check(ctx, &grpc_health_v1.HealthCheckRequest{
-			Service: w.anchor.config.Service,
+			Service: w.config.Service,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("gRPC health check failed on check call: %w", err)
@@ -63,7 +78,7 @@ func (w *checkWatcher) Helper() worker_queue.WatcherFunc {
 	}
 }
 
-func (w *checkWatcher) Notify(a interface{}, b interface{}) {
+func (w *grpcWatcher) Notify(a interface{}, b interface{}) {
 	h, ok := a.(*types.Endpoint)
 	if !ok {
 		return
@@ -74,5 +89,11 @@ func (w *checkWatcher) Notify(a interface{}, b interface{}) {
 		return
 	}
 
-	w.probe.Notify(h, s)
+	w.item.Notify(h, s)
+}
+
+func init() {
+	scout.Register(modelName, func(conf *scout.WatcherConfig) (scout.ScoutWatcher, error) {
+		return newGrpcWatcher(conf)
+	})
 }

@@ -28,23 +28,10 @@ func (t *testEntry) Notify(host *types.Endpoint, status bool) {
 }
 
 var (
-	cw *checkWatcher
+	cw *grpcWatcher
 )
 
 func TestHttpCheckWatcher(t *testing.T) {
-	sc := &scout.ModelConfig{
-		Data: &GrpcCheckerConfig{
-			Service: "HealthTest",
-			DialOptions: []grpc.DialOption{
-				grpc.WithInsecure(),
-			},
-		},
-	}
-
-	c, err := NewGrpcChecker(sc)
-	require.Equal(t, err, nil, "")
-	require.NotEqual(t, c, nil, "")
-
 	e := &testEntry{
 		addr: types.Endpoint{
 			Host: "192.168.11.2",
@@ -54,7 +41,17 @@ func TestHttpCheckWatcher(t *testing.T) {
 		idx:  0,
 	}
 
-	cw, err = newCheckWatcher(c, e)
+	sc := &scout.WatcherConfig{
+		Item: e,
+		Data: &GrpcCheckerConfig{
+			Service: "HealthTest",
+			DialOptions: []grpc.DialOption{
+				grpc.WithInsecure(),
+			},
+		},
+	}
+
+	cw, err := newGrpcWatcher(sc)
 	require.Equal(t, err, nil, "")
 	require.NotEqual(t, cw, nil, "")
 

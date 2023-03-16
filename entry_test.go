@@ -28,13 +28,11 @@ func TestEntrymanager(t *testing.T) {
 				Data: nil,
 			},
 		},
-		ScoutConfig: &ScoutMangerConfig{
+		ScoutConfig: &scout.HelperConfig{
 			Model: "custom",
-			Config: scout.ModelConfig{
-				Data: &custom.CustomCheckerConfig{
-					Probe: func(_ interface{}) (interface{}, error) {
-						return true, nil
-					},
+			Data: &custom.CustomCheckerConfig{
+				Probe: func(_ interface{}) (interface{}, error) {
+					return true, nil
 				},
 			},
 		},
