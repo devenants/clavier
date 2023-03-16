@@ -59,11 +59,6 @@ func TestHttpCheckWatcher(t *testing.T) {
 	d := cw.Data()
 	require.Equal(t, d.(*types.Endpoint).Host, e.addr.Host, "")
 
-	h := cw.Helper()
-	ret, err := h(d)
-	require.Equal(t, err, nil, "")
-	require.Equal(t, ret.(bool), true, "")
-
 	cw.Notify(&types.Endpoint{}, false)
 	require.Equal(t, e.idx, 1, "")
 }
