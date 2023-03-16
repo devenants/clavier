@@ -1,4 +1,7 @@
 # clavier
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/devenants/clavier)](https://goreportcard.com/report/github.com/devenants/clavier)
+
 A highly available service discovery framework applied to clients with load balancing and health check functions.
 
 # Overview
